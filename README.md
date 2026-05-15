@@ -98,8 +98,8 @@ codeup create demo-repo \
   --description "demo repository" \
   --visibility private \
   --namespace-id 2813489 \
-  --readme USER_GUIDE \
   --create-parent-path
+# 需要平台自动创建 README 时：--readme EMPTY（空文件）或 --readme USER_GUIDE（引导文档）
 ```
 
 可选项：
@@ -108,7 +108,7 @@ codeup create demo-repo \
 - `-d, --description <text>`：描述
 - `--visibility <private|internal>`：默认 `private`
 - `--namespace-id <id>`：父命名空间 ID；不传则建在组织根路径下
-- `--readme <EMPTY|USER_GUIDE>`：是否自动创建引导 README，默认 `USER_GUIDE`
+- `--readme`：默认**不传**该字段，不按 OpenAPI 自动初始化 README（与云效文档中 `readMeType: EMPTY` 不同：官方定义 `EMPTY` 仍会创建**空的** `README.md`）。需要空 README 时传 `--readme EMPTY`，需要引导内容时传 `--readme USER_GUIDE`
 - `--avatar-url <url>`：头像 URL
 - `--create-parent-path`：父路径不存在时自动创建
 - `--json`：输出原始 JSON

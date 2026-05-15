@@ -2,6 +2,7 @@ import { api } from '../client.js';
 import { printJson, printKeyValue, printSection } from '../format.js';
 
 const VALID_VISIBILITY = new Set(['private', 'internal']);
+/** API: EMPTY = 仍会自动创建空的 README.md；USER_GUIDE = 带引导内容。不传字段则不请求平台自动建 README。 */
 const VALID_README = new Set(['EMPTY', 'USER_GUIDE']);
 
 function parseIntOption(value, name) {
@@ -27,8 +28,7 @@ export function registerCreateCommand(program) {
     .option('--namespace-id <id>', 'parent namespace ID; omit to create at org root')
     .option(
       '--readme <type>',
-      'EMPTY | USER_GUIDE (default: USER_GUIDE)',
-      'USER_GUIDE',
+      'omit (default): do not send readMeType; EMPTY: empty README.md; USER_GUIDE: onboarding README',
     )
     .option('--avatar-url <url>', 'avatar URL')
     .option('--create-parent-path', 'auto-create the parent path if missing')
@@ -39,7 +39,7 @@ export function registerCreateCommand(program) {
           `--visibility must be one of: ${[...VALID_VISIBILITY].join(', ')}`,
         );
       }
-      if (!VALID_README.has(opts.readme)) {
+      if (opts.readme !== undefined && !VALID_README.has(opts.readme)) {
         throw new Error(
           `--readme must be one of: ${[...VALID_README].join(', ')}`,
         );
@@ -49,8 +49,10 @@ export function registerCreateCommand(program) {
         name,
         path: opts.path || name,
         visibility: opts.visibility,
-        readMeType: opts.readme,
       };
+      if (opts.readme !== undefined) {
+        body.readMeType = opts.readme;
+      }
       if (opts.description) body.description = opts.description;
       if (opts.avatarUrl) body.avatarUrl = opts.avatarUrl;
       if (opts.namespaceId) {
