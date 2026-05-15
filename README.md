@@ -89,10 +89,10 @@ codeup get 2813489 --json
 ### 创建 `codeup create`
 
 ```bash
-# 在组织根路径下创建私有库 demo-repo
+# 在组织根路径下创建库（默认组织内可见 internal）
 codeup create demo-repo
 
-# 完整选项
+# 完整选项（显式设为私有）
 codeup create demo-repo \
   --path demo-repo \
   --description "demo repository" \
@@ -106,7 +106,7 @@ codeup create demo-repo \
 
 - `--path <path>`：仓库路径，默认与 `<name>` 相同
 - `-d, --description <text>`：描述
-- `--visibility <private|internal>`：默认 `private`
+- `--visibility <private|internal>`：默认 `internal`（组织内公开）；需要私有时传 `private`
 - `--namespace-id <id>`：父命名空间 ID；不传则建在组织根路径下
 - `--readme`：默认**不传**该字段，不按 OpenAPI 自动初始化 README（与云效文档中 `readMeType: EMPTY` 不同：官方定义 `EMPTY` 仍会创建**空的** `README.md`）。需要空 README 时传 `--readme EMPTY`，需要引导内容时传 `--readme USER_GUIDE`
 - `--avatar-url <url>`：头像 URL

@@ -22,8 +22,8 @@ export function registerCreateCommand(program) {
     .option('-d, --description <text>', 'repository description')
     .option(
       '--visibility <v>',
-      'private | internal (default: private)',
-      'private',
+      'private | internal (default: internal)',
+      'internal',
     )
     .option('--namespace-id <id>', 'parent namespace ID; omit to create at org root')
     .option(
