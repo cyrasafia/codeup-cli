@@ -1,17 +1,11 @@
 import { api } from '../client.js';
+import { loadConfig } from '../config.js';
 import { printJson, printKeyValue, printSection } from '../format.js';
+import { resolveNamespaceRefToId } from '../resolve-namespace.js';
 
 const VALID_VISIBILITY = new Set(['private', 'internal']);
 /** API: EMPTY = 仍会自动创建空的 README.md；USER_GUIDE = 带引导内容。不传字段则不请求平台自动建 README。 */
 const VALID_README = new Set(['EMPTY', 'USER_GUIDE']);
-
-function parseIntOption(value, name) {
-  const n = Number.parseInt(value, 10);
-  if (!Number.isFinite(n)) {
-    throw new Error(`Invalid integer for ${name}: ${value}`);
-  }
-  return n;
-}
 
 export function registerCreateCommand(program) {
   program
@@ -25,7 +19,14 @@ export function registerCreateCommand(program) {
       'private | internal (default: internal)',
       'internal',
     )
-    .option('--namespace-id <id>', 'parent namespace ID; omit to create at org root')
+    .option(
+      '--namespace-id <ref>',
+      'parent namespace: numeric id or full path (e.g. zlxt/zl-product); omit uses config default',
+    )
+    .option(
+      '--org-root',
+      'with no --namespace-id: create under org root instead of defaultNamespaceId',
+    )
     .option(
       '--readme <type>',
       'omit (default): do not send readMeType; EMPTY: empty README.md; USER_GUIDE: onboarding README',
@@ -55,8 +56,18 @@ export function registerCreateCommand(program) {
       }
       if (opts.description) body.description = opts.description;
       if (opts.avatarUrl) body.avatarUrl = opts.avatarUrl;
-      if (opts.namespaceId) {
-        body.namespaceId = parseIntOption(opts.namespaceId, '--namespace-id');
+
+      const cfg = loadConfig();
+      if (opts.namespaceId !== undefined && opts.namespaceId !== null) {
+        const rawNs = String(opts.namespaceId).trim();
+        if (rawNs !== '') {
+          body.namespaceId = await resolveNamespaceRefToId(rawNs, cfg);
+        }
+      } else if (!opts.orgRoot && cfg.defaultNamespaceId) {
+        const raw = String(cfg.defaultNamespaceId).trim();
+        if (raw !== '') {
+          body.namespaceId = await resolveNamespaceRefToId(raw, cfg);
+        }
       }
 
       const query = {};

@@ -12,3 +12,5 @@ ref/ 中是codeup的repo管理api文档
 - 修改项目的信息
 
 其他功能暂时不需要
+
+需要支持配置创建repo的默认路径，如默认创建`zlxt/zl-product/`下

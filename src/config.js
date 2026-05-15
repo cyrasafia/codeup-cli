@@ -44,6 +44,11 @@ export function loadConfig() {
     domain: process.env[ENV_KEYS.domain] || file.domain || '',
     organizationId:
       process.env[ENV_KEYS.organizationId] || file.organizationId || '',
+    defaultNamespaceId:
+      process.env.CODEUP_DEFAULT_NAMESPACE ||
+      process.env.CODEUP_DEFAULT_NAMESPACE_ID ||
+      file.defaultNamespaceId ||
+      '',
   };
   return merged;
 }
@@ -75,6 +80,14 @@ export const CONFIG_KEY_ALIASES = {
   orgid: 'organizationId',
   organization: 'organizationId',
   organizationid: 'organizationId',
+  'default-namespace-id': 'defaultNamespaceId',
+  defaultnamespaceid: 'defaultNamespaceId',
+  'default-ns-id': 'defaultNamespaceId',
+  defaultnsid: 'defaultNamespaceId',
+  'default-namespace': 'defaultNamespaceId',
+  defaultnamespace: 'defaultNamespaceId',
+  'default-namespace-path': 'defaultNamespaceId',
+  defaultnamespacepath: 'defaultNamespaceId',
 };
 
 export function normalizeConfigKey(key) {
@@ -82,7 +95,7 @@ export function normalizeConfigKey(key) {
   const normalized = CONFIG_KEY_ALIASES[lower];
   if (!normalized) {
     throw new Error(
-      `Unknown config key "${key}". Valid keys: token, domain, org-id.`,
+      `Unknown config key "${key}". Valid keys: token, domain, org-id, default-namespace-id (or default-namespace / default-namespace-path).`,
     );
   }
   return normalized;

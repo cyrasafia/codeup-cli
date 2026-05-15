@@ -15,12 +15,27 @@ export function registerConfigCommand(program) {
 
   cmd
     .command('set')
-    .description('Set a config value (token | domain | org-id)')
-    .argument('<key>', 'config key: token | domain | org-id')
-    .argument('<value>', 'config value')
+    .description(
+      'Set a config value (token | domain | org-id | default-namespace-id | …)',
+    )
+    .argument(
+      '<key>',
+      'config key: token | domain | org-id | default-namespace-id | default-namespace | default-namespace-path',
+    )
+    .argument(
+      '<value>',
+      'config value; for default-namespace-id: numeric id or path like zlxt/zl-product (empty clears)',
+    )
     .action((key, value) => {
       const normalized = normalizeConfigKey(key);
       const current = readConfigFile();
+      if (normalized === 'defaultNamespaceId' && value === '') {
+        delete current.defaultNamespaceId;
+        writeConfigFile(current);
+        process.stdout.write(`Cleared ${normalized}\n`);
+        process.stdout.write(`Config file: ${getConfigPath()}\n`);
+        return;
+      }
       current[normalized] = value;
       writeConfigFile(current);
       const display =
@@ -32,7 +47,10 @@ export function registerConfigCommand(program) {
   cmd
     .command('get')
     .description('Print current effective config (env > file)')
-    .argument('[key]', 'optional key: token | domain | org-id')
+    .argument(
+      '[key]',
+      'optional key: token | domain | org-id | default-namespace-id',
+    )
     .action((key) => {
       const cfg = loadConfig();
       if (key) {
@@ -47,6 +65,7 @@ export function registerConfigCommand(program) {
       printKeyValue([
         ['domain', cfg.domain],
         ['organizationId', cfg.organizationId],
+        ['defaultNamespaceId', cfg.defaultNamespaceId || ''],
         ['token', maskToken(cfg.token)],
       ]);
       process.stdout.write(`\nConfig file: ${getConfigPath()}\n`);
