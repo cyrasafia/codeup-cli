@@ -1,0 +1,23 @@
+{
+  "name": "codeup-cli",
+  "version": "0.1.0",
+  "description": "CLI for managing Aliyun Yunxiao Codeup repositories (create / list / get / update)",
+  "type": "module",
+  "bin": {
+    "codeup": "./bin/codeup.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node ./bin/codeup.js"
+  },
+  "dependencies": {
+    "commander": "^12.1.0"
+  }
+}
