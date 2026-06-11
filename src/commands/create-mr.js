@@ -8,6 +8,15 @@ import {
 } from '../format.js';
 import { readGitContext, readLastCommitSubject } from '../git-context.js';
 
+const WIP_PREFIX_RE = /^\[wip\]\s*/i;
+
+export function applyWipTitle(title, wip) {
+  const trimmed = String(title ?? '').trim();
+  if (!wip) return trimmed;
+  if (WIP_PREFIX_RE.test(trimmed)) return trimmed;
+  return `[wip] ${trimmed}`;
+}
+
 function resolveRepoAndGit(repoArg, opts) {
   if (repoArg) {
     let gitCtx = null;
@@ -51,6 +60,10 @@ export function registerCreateMrCommand(program) {
       [],
     )
     .option('--ai-review', 'trigger AI review after creation')
+    .option(
+      '--wip',
+      'mark as work-in-progress (prepends [wip] to title; reviewers are not notified)',
+    )
     .option('--json', 'print raw JSON response')
     .action(async (repoArg, opts) => {
       const cfg = loadConfig();
@@ -95,6 +108,7 @@ export function registerCreateMrCommand(program) {
       if (!title) {
         title = `Merge ${sourceBranch} into ${targetBranch}`;
       }
+      title = applyWipTitle(title, opts.wip);
 
       const body = {
         title,

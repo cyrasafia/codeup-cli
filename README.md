@@ -187,6 +187,9 @@ codeup update my-namespace/demo-repo --name new-name --path new-path
 # 最简：当前分支 → 仓库默认分支，标题取最近一次 commit subject
 codeup create-mr -t "feat: add MR support"
 
+# 开发中（WIP）：自动在标题前加 [wip]，评审人不会收到通知
+codeup create-mr --wip -t "feat: add MR support"
+
 # 显式指定
 codeup create-mr zlxt/zl-product/my-repo \
   --source-branch feature/foo \
@@ -206,6 +209,7 @@ codeup create-mr zlxt/zl-product/my-repo \
 - `--remote <name>`：读取 remote 的名称，默认 `origin`
 - `--reviewer <userId>`：评审人（可重复）
 - `--ai-review`：创建后触发 AI 评审
+- `--wip`：开发中状态；在标题前加 `[wip]`（Codeup 约定，已有前缀则跳过）
 - `--json`：原始 JSON
 
 **注意：** 源分支需已 push 到远程；当前分支不能已是默认分支（除非显式 `--source-branch`）。
