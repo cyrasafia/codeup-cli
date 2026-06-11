@@ -83,3 +83,21 @@ export function pickRepoSummary(repo) {
     ['SSH clone', repo.sshUrlToRepo],
   ];
 }
+
+export function pickChangeRequestSummary(cr) {
+  const status = cr.status || cr.state;
+  const authorName = cr.author ? cr.author.name || cr.author.username : undefined;
+  return [
+    ['Local ID', cr.localId],
+    ['Title', cr.title],
+    ['Status', status],
+    ['Source', cr.sourceBranch],
+    ['Target', cr.targetBranch],
+    ['Author', authorName],
+    ['Conflict', cr.conflictCheckStatus || (cr.hasConflict != null ? cr.hasConflict : undefined)],
+    ['Created at', cr.createTime || cr.createdAt],
+    ['Updated at', cr.updateTime || cr.updatedAt],
+    ['Detail URL', cr.detailUrl],
+    ['Web URL', cr.webUrl],
+  ];
+}
