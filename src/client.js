@@ -116,6 +116,13 @@ export const api = {
       { cfg },
     );
   },
+  updateChangeRequest(repoId, localId, body, cfg) {
+    return request(
+      'PUT',
+      `/${encodeRepoId(repoId)}/changeRequests/${encodeURIComponent(String(localId))}`,
+      { body, cfg },
+    );
+  },
 };
 
 export function encodeRepoId(repoId) {

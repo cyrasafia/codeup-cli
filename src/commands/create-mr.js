@@ -7,15 +7,7 @@ import {
   printSection,
 } from '../format.js';
 import { readGitContext, readLastCommitSubject } from '../git-context.js';
-
-const WIP_PREFIX_RE = /^\[wip\]\s*/i;
-
-export function applyWipTitle(title, wip) {
-  const trimmed = String(title ?? '').trim();
-  if (!wip) return trimmed;
-  if (WIP_PREFIX_RE.test(trimmed)) return trimmed;
-  return `[wip] ${trimmed}`;
-}
+import { applyWipTitle } from '../mr-wip.js';
 
 function resolveRepoAndGit(repoArg, opts) {
   if (repoArg) {

@@ -8,6 +8,7 @@ import { registerConfigCommand } from '../src/commands/config.js';
 import { registerCreateMrCommand } from '../src/commands/create-mr.js';
 import { registerListMrCommand } from '../src/commands/list-mr.js';
 import { registerGetMrCommand } from '../src/commands/get-mr.js';
+import { registerUpdateMrCommand } from '../src/commands/update-mr.js';
 
 const program = new Command();
 
@@ -23,6 +24,7 @@ registerUpdateCommand(program);
 registerCreateMrCommand(program);
 registerListMrCommand(program);
 registerGetMrCommand(program);
+registerUpdateMrCommand(program);
 registerConfigCommand(program);
 
 program.parseAsync(process.argv).catch((err) => {

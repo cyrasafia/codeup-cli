@@ -37,7 +37,7 @@ codeup --help
 | `codeup list` / `codeup get` | **代码管理** · **代码仓库** · **只读** | 查询仓库列表与详情 |
 | `codeup create` / `codeup update` | **代码管理** · **代码仓库** · **读写** | 创建与更新仓库（已涵盖只读查询能力） |
 | `codeup list-mr` / `codeup get-mr` | **代码管理** · **合并请求** · **只读** | 查询合并请求列表与详情 |
-| `codeup create-mr` | **代码管理** · **合并请求** · **读写** | 创建合并请求 |
+| `codeup create-mr` / `codeup update-mr` | **代码管理** · **合并请求** · **读写** | 创建与更新合并请求 |
 | 将默认父路径或 `--namespace-id` 配成**路径**（如 `zlxt/zl-product`） | **代码管理** · **代码组** · **只读** | 创建前会调用 [GetNamespace](https://help.aliyun.com/zh/yunxiao/developer-reference/getnamespace-query-code-group-space-information) 把路径解析为 `namespaceId`；仅用**数字 ID** 时可不勾选此项 |
 
 **最小权限组合建议**
@@ -232,6 +232,19 @@ codeup get-mr zlxt/zl-product/foo 3
 codeup get-mr 2813489 3 --json
 ```
 
+### 更新合并请求 `codeup update-mr`
+
+至少要传一个字段。
+
+```bash
+codeup update-mr zlxt/zl-product/foo 2 -t "feat: 新增 MR 命令"
+codeup update-mr zlxt/zl-product/foo 2 -d "## 变更说明\n- 新增 create-mr、list-mr、get-mr"
+codeup update-mr zlxt/zl-product/foo 2 --no-wip   # 去掉标题 [wip]，转为正式评审
+codeup update-mr zlxt/zl-product/foo 2 --json
+```
+
+可选项：`-t, --title`、`-d, --description`、`--wip`（加 `[wip]` 前缀）、`--no-wip`（去掉 `[wip]` 前缀）、`--json`。
+
 ## 退出码
 
 - `0`：成功
@@ -239,4 +252,4 @@ codeup get-mr 2813489 3 --json
 
 ## 不在范围内
 
-按 `specs.md`，本 CLI 暂不实现：删除 / 归档 / 转移 / 模板库列表、关闭/合并 MR，以及日常 git 操作（clone/pull/push 等直接用 `git` 命令）。`create-mr` / `list-mr` 会读取本地 git 上下文推断仓库与分支，但不替代 git 本身。
+按 `specs.md`，本 CLI 暂不实现：删除 / 归档 / 转移 / 模板库列表、关闭/合并 MR，以及日常 git 操作（clone/pull/push 等直接用 `git` 命令）。`create-mr` / `list-mr` 会读取本地 git 上下文推断仓库与分支，但不替代 git 本身。`update-mr` 仅更新标题与描述。
