@@ -2,12 +2,10 @@
 
 阿里云云效 **Codeup** 仓库管理 CLI（基于 OpenAPI 中心版）。
 
-支持四个功能：
+支持功能：
 
-- 创建项目（仓库）
-- 查询项目列表
-- 查看项目详情
-- 修改项目信息
+- 创建 / 查询 / 更新项目（仓库）
+- 创建 / 查询合并请求（MR）
 
 > 跨平台（Linux / macOS / Windows），运行依赖 Node.js 18+（使用了内置 `fetch`）。
 
@@ -38,13 +36,17 @@ codeup --help
 | ---- | ---------------- | ---- |
 | `codeup list` / `codeup get` | **代码管理** · **代码仓库** · **只读** | 查询仓库列表与详情 |
 | `codeup create` / `codeup update` | **代码管理** · **代码仓库** · **读写** | 创建与更新仓库（已涵盖只读查询能力） |
+| `codeup list-mr` / `codeup get-mr` | **代码管理** · **合并请求** · **只读** | 查询合并请求列表与详情 |
+| `codeup create-mr` | **代码管理** · **合并请求** · **读写** | 创建合并请求 |
 | 将默认父路径或 `--namespace-id` 配成**路径**（如 `zlxt/zl-product`） | **代码管理** · **代码组** · **只读** | 创建前会调用 [GetNamespace](https://help.aliyun.com/zh/yunxiao/developer-reference/getnamespace-query-code-group-space-information) 把路径解析为 `namespaceId`；仅用**数字 ID** 时可不勾选此项 |
 
 **最小权限组合建议**
 
-- 只使用查询类命令：至少 **代码仓库 · 只读**。
-- 使用创建/更新：至少 **代码仓库 · 读写**。
-- 使用路径作为父分组且需解析：在上一行基础上增加 **代码组 · 只读**；若未开通，解析接口可能返回 **403**，可改为只使用数字 `namespaceId`。
+- 只使用仓库查询类命令：至少 **代码仓库 · 只读**。
+- 使用仓库创建/更新：至少 **代码仓库 · 读写**。
+- 使用 MR 查询：至少 **合并请求 · 只读**（通常与代码仓库只读一并勾选）。
+- 使用 `create-mr`：至少 **合并请求 · 读写**。
+- 使用路径作为父分组且需解析：在仓库相关权限基础上增加 **代码组 · 只读**；若未开通，解析接口可能返回 **403**，可改为只使用数字 `namespaceId`。
 
 **如何获取（云效控制台）**
 
@@ -177,6 +179,55 @@ codeup update my-namespace/demo-repo --name new-name --path new-path
 
 可选项：`--name`、`--path`、`--description`、`--visibility`、`--default-branch`、`--json`。
 
+### 创建合并请求 `codeup create-mr`
+
+在 Git 仓库目录内可省略仓库参数，自动从 `origin` remote 与当前分支推断：
+
+```bash
+# 最简：当前分支 → 仓库默认分支，标题取最近一次 commit subject
+codeup create-mr -t "feat: add MR support"
+
+# 显式指定
+codeup create-mr zlxt/zl-product/my-repo \
+  --source-branch feature/foo \
+  --target-branch main \
+  -t "标题" \
+  -d "描述" \
+  --reviewer <userId> \
+  --json
+```
+
+可选项：
+
+- `[repoId]`：数字 ID 或 `namespace/path`；省略时从 git remote 解析
+- `-t, --title <text>`：标题；省略时用 `git log -1` 的 subject，再 fallback 为 `Merge <source> into <target>`
+- `-d, --description <text>`：描述
+- `--source-branch` / `--target-branch`：源/目标分支；省略时分别为当前分支与仓库 `defaultBranch`
+- `--remote <name>`：读取 remote 的名称，默认 `origin`
+- `--reviewer <userId>`：评审人（可重复）
+- `--ai-review`：创建后触发 AI 评审
+- `--json`：原始 JSON
+
+**注意：** 源分支需已 push 到远程；当前分支不能已是默认分支（除非显式 `--source-branch`）。
+
+### 合并请求列表 `codeup list-mr`
+
+```bash
+codeup list-mr                           # 当前 git 仓库
+codeup list-mr zlxt/zl-product/foo       # 指定仓库
+codeup list-mr --state opened --search "fix"
+codeup list-mr --page 2 --per-page 50 --all --json
+```
+
+可选项：`--state opened|merged|closed`、`--search`、`--order-by created_at|updated_at`、`--sort asc|desc`、`--remote`、`--all`、`--json`。
+
+### 合并请求详情 `codeup get-mr`
+
+```bash
+codeup get-mr zlxt/zl-product/foo 3
+codeup get-mr 2813489 3 --json
+```
+
 ## 退出码
 
 - `0`：成功
@@ -184,4 +235,4 @@ codeup update my-namespace/demo-repo --name new-name --path new-path
 
 ## 不在范围内
 
-按 `specs.md`，本 CLI 暂不实现：删除 / 归档 / 转移 / 模板库列表，以及 git 操作（codeup 兼容 git，直接用 `git` 命令即可）。
+按 `specs.md`，本 CLI 暂不实现：删除 / 归档 / 转移 / 模板库列表、关闭/合并 MR，以及日常 git 操作（clone/pull/push 等直接用 `git` 命令）。`create-mr` / `list-mr` 会读取本地 git 上下文推断仓库与分支，但不替代 git 本身。

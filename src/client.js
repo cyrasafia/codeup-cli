@@ -1,12 +1,13 @@
 import { requireConfig } from './config.js';
 
-function buildUrl(cfg, suffix, query) {
+function buildOrgUrl(cfg, segments, query) {
   const proto = cfg.domain.startsWith('http') ? '' : 'https://';
   const base = `${proto}${cfg.domain}`.replace(/\/+$/, '');
+  const path = segments.replace(/^\/+/, '');
   const url = new URL(
     `${base}/oapi/v1/codeup/organizations/${encodeURIComponent(
       cfg.organizationId,
-    )}/repositories${suffix}`,
+    )}/${path}`,
   );
   if (query && typeof query === 'object') {
     for (const [k, v] of Object.entries(query)) {
@@ -15,6 +16,10 @@ function buildUrl(cfg, suffix, query) {
     }
   }
   return url.toString();
+}
+
+function buildUrl(cfg, suffix, query) {
+  return buildOrgUrl(cfg, `repositories${suffix}`, query);
 }
 
 function headersToObject(headers) {
@@ -37,6 +42,18 @@ export async function request(method, suffix, options = {}) {
   const { query, body, cfg: providedCfg } = options;
   const cfg = providedCfg || requireConfig();
   const url = buildUrl(cfg, suffix, query);
+  return requestUrl(method, url, { body, cfg });
+}
+
+export async function requestOrg(method, segments, options = {}) {
+  const { query, body, cfg: providedCfg } = options;
+  const cfg = providedCfg || requireConfig();
+  const url = buildOrgUrl(cfg, segments, query);
+  return requestUrl(method, url, { body, cfg });
+}
+
+async function requestUrl(method, url, options = {}) {
+  const { body, cfg } = options;
   const init = {
     method,
     headers: {
@@ -82,6 +99,23 @@ export const api = {
   updateRepository(repoId, body, cfg) {
     return request('PUT', `/${encodeRepoId(repoId)}`, { body, cfg });
   },
+  createChangeRequest(repoId, body, cfg) {
+    return request(
+      'POST',
+      `/${encodeRepoId(repoId)}/changeRequests`,
+      { body, cfg },
+    );
+  },
+  listChangeRequests(query, cfg) {
+    return requestOrg('GET', 'changeRequests', { query, cfg });
+  },
+  getChangeRequest(repoId, localId, cfg) {
+    return request(
+      'GET',
+      `/${encodeRepoId(repoId)}/changeRequests/${encodeURIComponent(String(localId))}`,
+      { cfg },
+    );
+  },
 };
 
 export function encodeRepoId(repoId) {
@@ -91,4 +125,23 @@ export function encodeRepoId(repoId) {
   const s = String(repoId);
   if (s.includes('/')) return encodeURIComponent(s);
   return encodeURIComponent(s);
+}
+
+function isNumericRepoRef(ref) {
+  return /^\d+$/.test(String(ref).trim());
+}
+
+export async function resolveRepoRefToId(ref, cfg) {
+  const trimmed = String(ref).trim();
+  if (!trimmed) {
+    throw new Error('repoId is required');
+  }
+  if (isNumericRepoRef(trimmed)) {
+    return Number.parseInt(trimmed, 10);
+  }
+  const { data } = await api.getRepository(trimmed, cfg);
+  if (!data || data.id === undefined || data.id === null) {
+    throw new Error(`Could not resolve repository ID for: ${trimmed}`);
+  }
+  return data.id;
 }
