@@ -1,7 +1,7 @@
 import { api } from '../../client.js';
 import { loadConfig } from '../../config.js';
 import { printJson, printKeyValue, printSection } from '../../format.js';
-import { resolveMrRepoRef } from '../shared/mr-repo-resolve.js';
+import { resolveMrRepoRef, normalizeMrRepoAndLocalId } from '../shared/mr-repo-resolve.js';
 
 export function registerMrReviewCommand(program) {
   program
@@ -11,7 +11,10 @@ export function registerMrReviewCommand(program) {
       '[repoId]',
       'numeric repository ID or namespace/path; omit to infer from git remote',
     )
-    .argument('<localId>', 'merge request local ID within the repository')
+    .argument(
+      '[localId]',
+      'merge request local ID; with two args this is the second (repo first)',
+    )
     .option('--approve', 'approve the merge request (PASS)')
     .option('--reject', 'reject the merge request (NOT_PASS)')
     .option('-c, --comment <text>', 'review comment')
@@ -35,8 +38,13 @@ export function registerMrReviewCommand(program) {
         throw new Error('Review opinion is required. Use --approve or --reject.');
       }
 
+      const { repoArg: repoRefArg, localId: mrLocalId } = normalizeMrRepoAndLocalId(
+        repoArg,
+        localId,
+      );
+
       const cfg = loadConfig();
-      const repoRef = await resolveMrRepoRef(repoArg, opts, cfg);
+      const repoRef = await resolveMrRepoRef(repoRefArg, opts, cfg);
 
       const body = {
         reviewOpinion: opts.approve ? 'PASS' : 'NOT_PASS',
@@ -48,7 +56,7 @@ export function registerMrReviewCommand(program) {
 
       const { data } = await api.reviewChangeRequest(
         repoRef,
-        localId,
+        mrLocalId,
         body,
         cfg,
       );
@@ -63,7 +71,7 @@ export function registerMrReviewCommand(program) {
         ['Result', data.result],
         ['Opinion', body.reviewOpinion],
         ['Repository', repoRef],
-        ['Local ID', localId],
+        ['Local ID', mrLocalId],
       ]);
     });
 }

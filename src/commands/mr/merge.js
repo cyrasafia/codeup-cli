@@ -6,7 +6,7 @@ import {
   printKeyValue,
   printSection,
 } from '../../format.js';
-import { resolveMrRepoRef } from '../shared/mr-repo-resolve.js';
+import { resolveMrRepoRef, normalizeMrRepoAndLocalId } from '../shared/mr-repo-resolve.js';
 
 const VALID_MERGE_TYPES = new Set([
   'ff-only',
@@ -23,7 +23,10 @@ export function registerMrMergeCommand(program) {
       '[repoId]',
       'numeric repository ID or namespace/path; omit to infer from git remote',
     )
-    .argument('<localId>', 'merge request local ID within the repository')
+    .argument(
+      '[localId]',
+      'merge request local ID; with two args this is the second (repo first)',
+    )
     .option(
       '--type <t>',
       'merge type: ff-only | no-fast-forward | squash | rebase (default: no-fast-forward)',
@@ -40,8 +43,13 @@ export function registerMrMergeCommand(program) {
         );
       }
 
+      const { repoArg: repoRefArg, localId: mrLocalId } = normalizeMrRepoAndLocalId(
+        repoArg,
+        localId,
+      );
+
       const cfg = loadConfig();
-      const repoRef = await resolveMrRepoRef(repoArg, opts, cfg);
+      const repoRef = await resolveMrRepoRef(repoRefArg, opts, cfg);
 
       const body = {
         mergeType: opts.type,
@@ -49,7 +57,7 @@ export function registerMrMergeCommand(program) {
       if (opts.message) body.mergeMessage = opts.message;
       if (opts.removeSourceBranch) body.removeSourceBranch = true;
 
-      const { data } = await api.mergeChangeRequest(repoRef, localId, body, cfg);
+      const { data } = await api.mergeChangeRequest(repoRef, mrLocalId, body, cfg);
 
       if (opts.json) {
         printJson(data);
