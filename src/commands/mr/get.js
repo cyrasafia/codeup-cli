@@ -1,14 +1,14 @@
-import { api } from '../client.js';
+import { api } from '../../client.js';
 import {
   pickChangeRequestSummary,
   printJson,
   printKeyValue,
   printSection,
-} from '../format.js';
+} from '../../format.js';
 
-export function registerGetMrCommand(program) {
+export function registerMrGetCommand(program) {
   program
-    .command('get-mr')
+    .command('get')
     .description('Show merge request details by repository and local ID')
     .argument('<repoId>', 'numeric repository ID or "namespace/path"')
     .argument('<localId>', 'merge request local ID within the repository')

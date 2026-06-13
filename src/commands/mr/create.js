@@ -1,33 +1,18 @@
-import { api, resolveRepoRefToId } from '../client.js';
-import { loadConfig } from '../config.js';
+import { api, resolveRepoRefToId } from '../../client.js';
+import { loadConfig } from '../../config.js';
 import {
   pickChangeRequestSummary,
   printJson,
   printKeyValue,
   printSection,
-} from '../format.js';
-import { readGitContext, readLastCommitSubject } from '../git-context.js';
-import { applyWipTitle } from '../mr-wip.js';
+} from '../../format.js';
+import { readLastCommitSubject } from '../../git-context.js';
+import { applyWipTitle } from '../../mr-wip.js';
+import { resolveMrRepoAndGit } from '../shared/mr-repo-resolve.js';
 
-function resolveRepoAndGit(repoArg, opts) {
-  if (repoArg) {
-    let gitCtx = null;
-    if (!opts.sourceBranch) {
-      try {
-        gitCtx = readGitContext({ remoteName: opts.remote || 'origin' });
-      } catch {
-        gitCtx = null;
-      }
-    }
-    return { repoRef: repoArg, gitCtx };
-  }
-  const gitCtx = readGitContext({ remoteName: opts.remote || 'origin' });
-  return { repoRef: gitCtx.repoPath, gitCtx };
-}
-
-export function registerCreateMrCommand(program) {
+export function registerMrCreateCommand(program) {
   program
-    .command('create-mr')
+    .command('create')
     .description('Create a merge request (change request)')
     .argument(
       '[repoId]',
@@ -59,7 +44,7 @@ export function registerCreateMrCommand(program) {
     .option('--json', 'print raw JSON response')
     .action(async (repoArg, opts) => {
       const cfg = loadConfig();
-      const { repoRef, gitCtx } = resolveRepoAndGit(repoArg, opts);
+      const { repoRef, gitCtx } = resolveMrRepoAndGit(repoArg, opts);
 
       const repoId = await resolveRepoRefToId(repoRef, cfg);
       const { data: repo } = await api.getRepository(repoRef, cfg);

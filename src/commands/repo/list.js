@@ -1,5 +1,5 @@
-import { api } from '../client.js';
-import { printJson, printTable } from '../format.js';
+import { api } from '../../client.js';
+import { printJson, printTable } from '../../format.js';
 
 function parsePositiveInt(value, name) {
   const n = Number.parseInt(value, 10);
@@ -9,7 +9,7 @@ function parsePositiveInt(value, name) {
   return n;
 }
 
-export function registerListCommand(program) {
+export function registerRepoListCommand(program) {
   program
     .command('list')
     .description('List repositories in the organization')
@@ -25,10 +25,6 @@ export function registerListCommand(program) {
     .option('--all', 'auto-paginate and return every repository')
     .option('--json', 'print raw JSON response')
     .action(async (opts) => {
-      if (opts.all && (opts.page || opts.perPage)) {
-        // Allow --all with --per-page to control batch size, but ignore --page
-      }
-
       const baseQuery = {
         orderBy: opts.orderBy,
         sort: opts.sort,
@@ -45,7 +41,6 @@ export function registerListCommand(program) {
       if (opts.all) {
         const perPage = baseQuery.perPage || 100;
         let page = 1;
-        // Cap to API documented soft limit of 150 pages.
         for (; page <= 150; page += 1) {
           const { data, headers } = await api.listRepositories({
             ...baseQuery,

@@ -1,11 +1,11 @@
-import { api } from '../client.js';
+import { api } from '../../client.js';
 import {
   pickChangeRequestSummary,
   printJson,
   printKeyValue,
   printSection,
-} from '../format.js';
-import { applyWipTitle, stripWipTitle } from '../mr-wip.js';
+} from '../../format.js';
+import { applyWipTitle, stripWipTitle } from '../../mr-wip.js';
 
 function resolveTitle(opts, currentTitle) {
   if (opts.wip && opts.noWip) {
@@ -25,9 +25,9 @@ function resolveTitle(opts, currentTitle) {
   return undefined;
 }
 
-export function registerUpdateMrCommand(program) {
+export function registerMrUpdateCommand(program) {
   program
-    .command('update-mr')
+    .command('update')
     .description(
       'Update merge request title or description (at least one field is required)',
     )

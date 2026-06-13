@@ -1,7 +1,7 @@
-import { api, resolveRepoRefToId } from '../client.js';
-import { loadConfig } from '../config.js';
-import { printJson, printTable } from '../format.js';
-import { readGitContext } from '../git-context.js';
+import { api } from '../../client.js';
+import { loadConfig } from '../../config.js';
+import { printJson, printTable } from '../../format.js';
+import { resolveMrProjectIds } from '../shared/mr-repo-resolve.js';
 
 const VALID_STATE = new Set(['opened', 'merged', 'closed']);
 const VALID_ORDER_BY = new Set(['created_at', 'updated_at']);
@@ -15,19 +15,9 @@ function parsePositiveInt(value, name) {
   return n;
 }
 
-async function resolveProjectIds(repoArg, opts, cfg) {
-  if (repoArg) {
-    const id = await resolveRepoRefToId(repoArg, cfg);
-    return String(id);
-  }
-  const gitCtx = readGitContext({ remoteName: opts.remote || 'origin' });
-  const id = await resolveRepoRefToId(gitCtx.repoPath, cfg);
-  return String(id);
-}
-
-export function registerListMrCommand(program) {
+export function registerMrListCommand(program) {
   program
-    .command('list-mr')
+    .command('list')
     .description('List merge requests (change requests)')
     .argument(
       '[repoId]',
@@ -58,7 +48,7 @@ export function registerListMrCommand(program) {
       }
 
       const cfg = loadConfig();
-      const projectIds = await resolveProjectIds(repoArg, opts, cfg);
+      const projectIds = await resolveMrProjectIds(repoArg, opts, cfg);
 
       const baseQuery = {
         projectIds,

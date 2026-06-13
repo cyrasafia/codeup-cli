@@ -1,13 +1,12 @@
-import { api } from '../client.js';
-import { loadConfig } from '../config.js';
-import { printJson, printKeyValue, printSection } from '../format.js';
-import { resolveNamespaceRefToId } from '../resolve-namespace.js';
+import { api } from '../../client.js';
+import { loadConfig } from '../../config.js';
+import { printJson, printKeyValue, printSection } from '../../format.js';
+import { resolveNamespaceRefToId } from '../../resolve-namespace.js';
 
 const VALID_VISIBILITY = new Set(['private', 'internal']);
-/** API: EMPTY = 仍会自动创建空的 README.md；USER_GUIDE = 带引导内容。不传字段则不请求平台自动建 README。 */
 const VALID_README = new Set(['EMPTY', 'USER_GUIDE']);
 
-export function registerCreateCommand(program) {
+export function registerRepoCreateCommand(program) {
   program
     .command('create')
     .description('Create a new repository')

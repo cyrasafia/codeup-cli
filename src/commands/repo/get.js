@@ -1,12 +1,12 @@
-import { api } from '../client.js';
+import { api } from '../../client.js';
 import {
   pickRepoSummary,
   printJson,
   printKeyValue,
   printSection,
-} from '../format.js';
+} from '../../format.js';
 
-export function registerGetCommand(program) {
+export function registerRepoGetCommand(program) {
   program
     .command('get')
     .description('Show repository details by ID or namespace/path')

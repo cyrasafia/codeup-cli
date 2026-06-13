@@ -1,14 +1,14 @@
-import { api } from '../client.js';
+import { api } from '../../client.js';
 import {
   pickRepoSummary,
   printJson,
   printKeyValue,
   printSection,
-} from '../format.js';
+} from '../../format.js';
 
 const VALID_VISIBILITY = new Set(['private', 'internal']);
 
-export function registerUpdateCommand(program) {
+export function registerRepoUpdateCommand(program) {
   program
     .command('update')
     .description('Update repository fields (at least one --field is required)')

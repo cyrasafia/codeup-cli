@@ -40,7 +40,7 @@ export function parseCodeupRemoteUrl(url) {
   throw new Error(
     `Could not parse Codeup remote URL: ${raw}\n` +
       'Expected SSH (git@codeup.aliyun.com:namespace/repo.git) or HTTPS Codeup URL.\n' +
-      'Pass the repository explicitly: codeup create-mr <namespace/path>',
+      'Pass the repository explicitly: codeup mr create <namespace/path>',
   );
 }
 
@@ -48,7 +48,7 @@ export function readGitContext({ cwd = process.cwd(), remoteName = 'origin' } = 
   const inside = runGit(['rev-parse', '--is-inside-work-tree'], { cwd });
   if (inside !== 'true') {
     throw new Error(
-      'Not inside a git repository. Pass the repository explicitly: codeup create-mr <namespace/path>',
+      'Not inside a git repository. Pass the repository explicitly: codeup mr create <namespace/path>',
     );
   }
 
