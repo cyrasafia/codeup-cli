@@ -30,3 +30,31 @@ export async function resolveMrProjectIds(repoArg, opts, cfg) {
   const id = await resolveRepoRefToId(repoRef, cfg);
   return String(id);
 }
+
+/**
+ * Commander maps a single positional arg to [repoId] when localId is optional
+ * in the signature. Normalize so `mr merge 3` means localId=3 with repo from git.
+ */
+export function normalizeMrRepoAndLocalId(repoArg, localId) {
+  if (localId !== undefined && localId !== null && String(localId).trim() !== '') {
+    return {
+      repoArg: repoArg === undefined ? undefined : String(repoArg).trim(),
+      localId: String(localId).trim(),
+    };
+  }
+
+  if (repoArg === undefined || repoArg === null || String(repoArg).trim() === '') {
+    throw new Error(
+      'localId is required. Usage: codeup mr <command> <localId> or codeup mr <command> <repoId> <localId>',
+    );
+  }
+
+  const only = String(repoArg).trim();
+  if (only.includes('/')) {
+    throw new Error(
+      'localId is required when repository is a path. Usage: codeup mr <command> <repoId> <localId>',
+    );
+  }
+
+  return { repoArg: undefined, localId: only };
+}
