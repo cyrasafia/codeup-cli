@@ -116,6 +116,27 @@ export const api = {
       { cfg },
     );
   },
+  updateChangeRequest(repoId, localId, body, cfg) {
+    return request(
+      'PUT',
+      `/${encodeRepoId(repoId)}/changeRequests/${encodeURIComponent(String(localId))}`,
+      { body, cfg },
+    );
+  },
+  reviewChangeRequest(repoId, localId, body, cfg) {
+    return request(
+      'POST',
+      `/${encodeRepoId(repoId)}/changeRequests/${encodeURIComponent(String(localId))}/review`,
+      { body, cfg },
+    );
+  },
+  mergeChangeRequest(repoId, localId, body, cfg) {
+    return request(
+      'POST',
+      `/${encodeRepoId(repoId)}/changeRequests/${encodeURIComponent(String(localId))}/merge`,
+      { body, cfg },
+    );
+  },
 };
 
 export function encodeRepoId(repoId) {

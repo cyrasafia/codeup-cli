@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import { registerListCommand } from '../src/commands/list.js';
-import { registerGetCommand } from '../src/commands/get.js';
-import { registerCreateCommand } from '../src/commands/create.js';
-import { registerUpdateCommand } from '../src/commands/update.js';
+import { registerRepoListCommand } from '../src/commands/repo/list.js';
+import { registerRepoGetCommand } from '../src/commands/repo/get.js';
+import { registerRepoCreateCommand } from '../src/commands/repo/create.js';
+import { registerRepoUpdateCommand } from '../src/commands/repo/update.js';
+import { registerMrCreateCommand } from '../src/commands/mr/create.js';
+import { registerMrListCommand } from '../src/commands/mr/list.js';
+import { registerMrGetCommand } from '../src/commands/mr/get.js';
+import { registerMrUpdateCommand } from '../src/commands/mr/update.js';
+import { registerMrReviewCommand } from '../src/commands/mr/review.js';
+import { registerMrMergeCommand } from '../src/commands/mr/merge.js';
 import { registerConfigCommand } from '../src/commands/config.js';
-import { registerCreateMrCommand } from '../src/commands/create-mr.js';
-import { registerListMrCommand } from '../src/commands/list-mr.js';
-import { registerGetMrCommand } from '../src/commands/get-mr.js';
 
 const program = new Command();
 
@@ -16,13 +19,26 @@ program
   .description('CLI for Aliyun Yunxiao Codeup repository management')
   .version('0.1.0');
 
-registerListCommand(program);
-registerGetCommand(program);
-registerCreateCommand(program);
-registerUpdateCommand(program);
-registerCreateMrCommand(program);
-registerListMrCommand(program);
-registerGetMrCommand(program);
+const repo = program
+  .command('repo')
+  .description('Repository management');
+
+registerRepoListCommand(repo);
+registerRepoGetCommand(repo);
+registerRepoCreateCommand(repo);
+registerRepoUpdateCommand(repo);
+
+const mr = program
+  .command('mr')
+  .description('Merge request management');
+
+registerMrCreateCommand(mr);
+registerMrListCommand(mr);
+registerMrGetCommand(mr);
+registerMrUpdateCommand(mr);
+registerMrReviewCommand(mr);
+registerMrMergeCommand(mr);
+
 registerConfigCommand(program);
 
 program.parseAsync(process.argv).catch((err) => {

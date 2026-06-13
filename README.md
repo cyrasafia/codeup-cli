@@ -5,7 +5,7 @@
 支持功能：
 
 - 创建 / 查询 / 更新项目（仓库）
-- 创建 / 查询合并请求（MR）
+- 创建 / 查询 / 更新 / 评审 / 合并合并请求（MR）
 
 > 跨平台（Linux / macOS / Windows），运行依赖 Node.js 18+（使用了内置 `fetch`）。
 
@@ -22,6 +22,27 @@ npm link        # 将 codeup 命令安装到全局 PATH
 
 ```bash
 codeup --help
+codeup repo --help
+codeup mr --help
+```
+
+## 命令结构
+
+```
+codeup
+├── config          # 配置管理（顶层）
+├── repo            # 仓库管理
+│   ├── list
+│   ├── get
+│   ├── create
+│   └── update
+└── mr              # 合并请求管理
+    ├── create
+    ├── list
+    ├── get
+    ├── update
+    ├── review
+    └── merge
 ```
 
 ## 配置
@@ -34,10 +55,10 @@ codeup --help
 
 | 用途 | 文档中的典型表述 | 说明 |
 | ---- | ---------------- | ---- |
-| `codeup list` / `codeup get` | **代码管理** · **代码仓库** · **只读** | 查询仓库列表与详情 |
-| `codeup create` / `codeup update` | **代码管理** · **代码仓库** · **读写** | 创建与更新仓库（已涵盖只读查询能力） |
-| `codeup list-mr` / `codeup get-mr` | **代码管理** · **合并请求** · **只读** | 查询合并请求列表与详情 |
-| `codeup create-mr` | **代码管理** · **合并请求** · **读写** | 创建合并请求 |
+| `codeup repo list` / `codeup repo get` | **代码管理** · **代码仓库** · **只读** | 查询仓库列表与详情 |
+| `codeup repo create` / `codeup repo update` | **代码管理** · **代码仓库** · **读写** | 创建与更新仓库（已涵盖只读查询能力） |
+| `codeup mr list` / `codeup mr get` | **代码管理** · **合并请求** · **只读** | 查询合并请求列表与详情 |
+| `codeup mr create` / `update` / `review` / `merge` | **代码管理** · **合并请求** · **读写** | 创建、更新、评审与合并 MR |
 | 将默认父路径或 `--namespace-id` 配成**路径**（如 `zlxt/zl-product`） | **代码管理** · **代码组** · **只读** | 创建前会调用 [GetNamespace](https://help.aliyun.com/zh/yunxiao/developer-reference/getnamespace-query-code-group-space-information) 把路径解析为 `namespaceId`；仅用**数字 ID** 时可不勾选此项 |
 
 **最小权限组合建议**
@@ -45,7 +66,7 @@ codeup --help
 - 只使用仓库查询类命令：至少 **代码仓库 · 只读**。
 - 使用仓库创建/更新：至少 **代码仓库 · 读写**。
 - 使用 MR 查询：至少 **合并请求 · 只读**（通常与代码仓库只读一并勾选）。
-- 使用 `create-mr`：至少 **合并请求 · 读写**。
+- 使用 MR 创建/评审/合并：至少 **合并请求 · 读写**。
 - 使用路径作为父分组且需解析：在仓库相关权限基础上增加 **代码组 · 只读**；若未开通，解析接口可能返回 **403**，可改为只使用数字 `namespaceId`。
 
 **如何获取（云效控制台）**
@@ -91,8 +112,6 @@ export CODEUP_DOMAIN=openapi-rdc.aliyuncs.com
 export CODEUP_ORG_ID=60d54f3daccf2bbd6659f3ad
 export CODEUP_TOKEN=pt-0fh3****0fbG_35af****0484
 export CODEUP_DEFAULT_NAMESPACE=zlxt/zl-product   # 可选；也可用纯数字 ID
-# 兼容旧名：
-# export CODEUP_DEFAULT_NAMESPACE_ID=1844019
 ```
 
 **方式二：写入 `~/.codeup/config.json`**
@@ -101,97 +120,68 @@ export CODEUP_DEFAULT_NAMESPACE=zlxt/zl-product   # 可选；也可用纯数字 
 codeup config set domain openapi-rdc.aliyuncs.com
 codeup config set org-id 60d54f3daccf2bbd6659f3ad
 codeup config set token  pt-0fh3****0fbG_35af****0484
-codeup config set default-namespace-id zlxt/zl-product   # 或纯数字 ID；也可用 default-namespace / default-namespace-path
-# 清空：codeup config set default-namespace-id ""
+codeup config set default-namespace-id zlxt/zl-product
 
-codeup config get          # 查看当前生效配置（token 自动脱敏）
-codeup config path         # 打印配置文件绝对路径
+codeup config get
+codeup config path
 ```
 
 ## 用法
 
 所有数据命令都支持 `--json` 输出原始 JSON，便于脚本管道使用。
 
-### 列表 `codeup list`
+### 仓库列表 `codeup repo list`
 
 ```bash
-codeup list                              # 默认第 1 页，每页 20 条，按创建时间倒序
-codeup list --search demo                # 按路径模糊搜索
-codeup list --order-by last_activity_at --sort desc
-codeup list --archived                   # 只看已归档
-codeup list --per-page 50 --page 2
-codeup list --all                        # 自动翻页拉取全部（受 API 150 页上限约束）
-codeup list --json                       # 原始 JSON 输出
+codeup repo list
+codeup repo list --search demo
+codeup repo list --order-by last_activity_at --sort desc
+codeup repo list --archived
+codeup repo list --per-page 50 --page 2
+codeup repo list --all --json
 ```
 
-输出末尾会附带 `shown N | total M | page x/y` 这样的小结。
-
-### 详情 `codeup get`
+### 仓库详情 `codeup repo get`
 
 ```bash
-codeup get 2813489                       # 按数字 ID
-codeup get my-namespace/demo-repo        # 按 namespace/path（自动 URL 编码）
-codeup get 2813489 --json
+codeup repo get 2813489
+codeup repo get my-namespace/demo-repo --json
 ```
 
-### 创建 `codeup create`
+### 创建仓库 `codeup repo create`
 
 ```bash
-# 在组织根路径下创建库（默认组织内可见 internal）
-codeup create demo-repo
-
-# 若已配置 defaultNamespaceId，上面会在默认父路径下创建；本次强制建在组织根：
-codeup create demo-repo --org-root
-
-# 完整选项（显式设为私有）
-codeup create demo-repo \
+codeup repo create demo-repo
+codeup repo create demo-repo --org-root
+codeup repo create demo-repo \
   --path demo-repo \
   --description "demo repository" \
   --visibility private \
   --namespace-id zlxt/zl-product \
   --create-parent-path
-# 需要平台自动创建 README 时：--readme EMPTY（空文件）或 --readme USER_GUIDE（引导文档）
 ```
 
-可选项：
+可选项：`--path`、`-d, --description`、`--visibility`（默认 `internal`）、`--namespace-id`、`--org-root`、`--readme EMPTY|USER_GUIDE`、`--avatar-url`、`--create-parent-path`、`--json`。
 
-- `--path <path>`：仓库路径，默认与 `<name>` 相同
-- `-d, --description <text>`：描述
-- `--visibility <private|internal>`：默认 `internal`（组织内公开）；需要私有时传 `private`
-- `--namespace-id <ref>`：本次父路径，可为**数字 ID**或**全路径**（如 `zlxt/zl-product`），**优先于**配置里的默认父路径
-- `--org-root`：本次在**组织根路径**下创建，忽略配置中的默认父路径
-- 若未传 `--namespace-id` 且未使用 `--org-root`：若配置了默认父路径（ID 或路径）则先解析再创建；否则建在组织根下
-- `--readme`：默认**不传**该字段，不按 OpenAPI 自动初始化 README（与云效文档中 `readMeType: EMPTY` 不同：官方定义 `EMPTY` 仍会创建**空的** `README.md`）。需要空 README 时传 `--readme EMPTY`，需要引导内容时传 `--readme USER_GUIDE`
-- `--avatar-url <url>`：头像 URL
-- `--create-parent-path`：父路径不存在时自动创建
-- `--json`：输出原始 JSON
+### 更新仓库 `codeup repo update`
 
-### 更新 `codeup update`
-
-至少要传一个字段，否则会报错。
+至少要传一个字段。
 
 ```bash
-codeup update 2813489 --description "新的描述"
-codeup update 2813489 --visibility internal
-codeup update 2813489 --default-branch main
-codeup update my-namespace/demo-repo --name new-name --path new-path
+codeup repo update 2813489 --description "新的描述"
+codeup repo update my-namespace/demo-repo --default-branch main
 ```
 
 可选项：`--name`、`--path`、`--description`、`--visibility`、`--default-branch`、`--json`。
 
-### 创建合并请求 `codeup create-mr`
+### 创建 MR `codeup mr create`
 
 在 Git 仓库目录内可省略仓库参数，自动从 `origin` remote 与当前分支推断：
 
 ```bash
-# 最简：当前分支 → 仓库默认分支，标题取最近一次 commit subject
-codeup create-mr -t "feat: add MR support"
-
-# 开发中（WIP）：自动在标题前加 [wip]，评审人不会收到通知
-codeup create-mr --wip -t "feat: add MR support"
-
-# 显式指定
-codeup create-mr zlxt/zl-product/my-repo \
+codeup mr create -t "feat: add MR support"
+codeup mr create --wip -t "feat: add MR support"
+codeup mr create zlxt/zl-product/my-repo \
   --source-branch feature/foo \
   --target-branch main \
   -t "标题" \
@@ -200,37 +190,61 @@ codeup create-mr zlxt/zl-product/my-repo \
   --json
 ```
 
-可选项：
-
-- `[repoId]`：数字 ID 或 `namespace/path`；省略时从 git remote 解析
-- `-t, --title <text>`：标题；省略时用 `git log -1` 的 subject，再 fallback 为 `Merge <source> into <target>`
-- `-d, --description <text>`：描述
-- `--source-branch` / `--target-branch`：源/目标分支；省略时分别为当前分支与仓库 `defaultBranch`
-- `--remote <name>`：读取 remote 的名称，默认 `origin`
-- `--reviewer <userId>`：评审人（可重复）
-- `--ai-review`：创建后触发 AI 评审
-- `--wip`：开发中状态；在标题前加 `[wip]`（Codeup 约定，已有前缀则跳过）
-- `--json`：原始 JSON
+可选项：`[repoId]`、`-t, --title`、`-d, --description`、`--source-branch`、`--target-branch`、`--remote`、`--reviewer`（可重复）、`--ai-review`、`--wip`、`--json`。
 
 **注意：** 源分支需已 push 到远程；当前分支不能已是默认分支（除非显式 `--source-branch`）。
 
-### 合并请求列表 `codeup list-mr`
+### MR 列表 `codeup mr list`
 
 ```bash
-codeup list-mr                           # 当前 git 仓库
-codeup list-mr zlxt/zl-product/foo       # 指定仓库
-codeup list-mr --state opened --search "fix"
-codeup list-mr --page 2 --per-page 50 --all --json
+codeup mr list
+codeup mr list zlxt/zl-product/foo
+codeup mr list --state opened --search "fix"
+codeup mr list --page 2 --per-page 50 --all --json
 ```
 
-可选项：`--state opened|merged|closed`、`--search`、`--order-by created_at|updated_at`、`--sort asc|desc`、`--remote`、`--all`、`--json`。
-
-### 合并请求详情 `codeup get-mr`
+### MR 详情 `codeup mr get`
 
 ```bash
-codeup get-mr zlxt/zl-product/foo 3
-codeup get-mr 2813489 3 --json
+codeup mr get zlxt/zl-product/foo 3
+codeup mr get 2813489 3 --json
 ```
+
+### 更新 MR `codeup mr update`
+
+至少要传一个字段。
+
+```bash
+codeup mr update zlxt/zl-product/foo 2 -t "feat: 新增 MR 命令"
+codeup mr update zlxt/zl-product/foo 2 --no-wip
+codeup mr update zlxt/zl-product/foo 2 --json
+```
+
+可选项：`-t, --title`、`-d, --description`、`--wip`、`--no-wip`、`--json`。
+
+### 评审 MR `codeup mr review`
+
+必须指定 `--approve` 或 `--reject`。
+
+```bash
+codeup mr review zlxt/zl-product/foo 3 --approve
+codeup mr review zlxt/zl-product/foo 3 --approve -c "LGTM"
+codeup mr review 3 --reject -c "需要补充单测"    # 省略 repoId 时从 git remote 推断
+codeup mr review zlxt/zl-product/foo 3 --approve --json
+```
+
+可选项：`[repoId]`、`--approve`、`--reject`、`-c, --comment`、`--draft-comment-id`（可重复）、`--remote`、`--json`。
+
+### 合并 MR `codeup mr merge`
+
+```bash
+codeup mr merge zlxt/zl-product/foo 3
+codeup mr merge zlxt/zl-product/foo 3 --type squash
+codeup mr merge 3 --remove-source-branch -m "Merge feat/foo"
+codeup mr merge zlxt/zl-product/foo 3 --json
+```
+
+可选项：`[repoId]`、`--type`（默认 `no-fast-forward`：`ff-only` | `no-fast-forward` | `squash` | `rebase`）、`-m, --message`、`--remove-source-branch`、`--remote`、`--json`。
 
 ## 退出码
 
@@ -239,4 +253,4 @@ codeup get-mr 2813489 3 --json
 
 ## 不在范围内
 
-按 `specs.md`，本 CLI 暂不实现：删除 / 归档 / 转移 / 模板库列表、关闭/合并 MR，以及日常 git 操作（clone/pull/push 等直接用 `git` 命令）。`create-mr` / `list-mr` 会读取本地 git 上下文推断仓库与分支，但不替代 git 本身。
+按 `specs.md`，本 CLI 暂不实现：删除 / 归档 / 转移 / 模板库列表、关闭 MR，以及日常 git 操作（clone/pull/push 等直接用 `git` 命令）。`codeup mr create` / `codeup mr list` 会读取本地 git 上下文推断仓库与分支，但不替代 git 本身。

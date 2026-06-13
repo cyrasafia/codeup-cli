@@ -1,7 +1,7 @@
 {
   "name": "codeup-cli",
   "version": "0.1.0",
-  "description": "CLI for managing Aliyun Yunxiao Codeup repositories (create / list / get / update)",
+  "description": "CLI for managing Aliyun Yunxiao Codeup repositories and merge requests",
   "type": "module",
   "bin": {
     "codeup": "./bin/codeup.js"
