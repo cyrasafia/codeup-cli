@@ -1,19 +1,20 @@
 import { api } from '../../../client.js';
 
 const COMMENT_TYPE_MAP = {
-  all: 'GLOBAL_COMMENT,INLINE_COMMENT',
   global: 'GLOBAL_COMMENT',
   inline: 'INLINE_COMMENT',
 };
 
 export function buildListCommentsBody(opts) {
   const body = {};
-  const commentType = COMMENT_TYPE_MAP[opts.type || 'all'];
-  if (commentType) body.comment_type = commentType;
+  const type = opts.type || 'all';
+  if (type !== 'all') {
+    body.comment_type = COMMENT_TYPE_MAP[type];
+  }
   if (opts.file) body.file_path = opts.file;
   if (opts.resolved === true) body.resolved = true;
   if (opts.resolved === false) body.resolved = false;
-  body.state = opts.includeDrafts ? 'DRAFT,OPENED' : 'OPENED';
+  if (!opts.includeDrafts) body.state = 'OPENED';
   if (opts.commentBizIds && opts.commentBizIds.length > 0) {
     body.comment_biz_id_list = opts.commentBizIds;
   }

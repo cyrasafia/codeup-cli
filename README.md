@@ -207,8 +207,10 @@ codeup mr list --page 2 --per-page 50 --all --json
 
 ```bash
 codeup mr get zlxt/zl-product/foo 3
-codeup mr get 2813489 3 --json
+codeup mr get 3 --json    # 省略 repoId 时从 git remote 推断
 ```
+
+可选项：`[repoId]`、`[localId]`、`--remote`、`--json`。
 
 ### 更新 MR `codeup mr update`
 
@@ -216,11 +218,11 @@ codeup mr get 2813489 3 --json
 
 ```bash
 codeup mr update zlxt/zl-product/foo 2 -t "feat: 新增 MR 命令"
-codeup mr update zlxt/zl-product/foo 2 --no-wip
+codeup mr update 2 --no-wip    # 省略 repoId 时从 git remote 推断
 codeup mr update zlxt/zl-product/foo 2 --json
 ```
 
-可选项：`-t, --title`、`-d, --description`、`--wip`、`--no-wip`、`--json`。
+可选项：`[repoId]`、`[localId]`、`-t, --title`、`-d, --description`、`--wip`、`--no-wip`、`--remote`、`--json`。
 
 ### 评审 MR `codeup mr review`
 
