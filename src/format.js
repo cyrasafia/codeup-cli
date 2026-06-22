@@ -101,3 +101,67 @@ export function pickChangeRequestSummary(cr) {
     ['Web URL', cr.webUrl],
   ];
 }
+
+function summarizeCommentContent(content, maxLen = 80) {
+  const text = String(content ?? '').replace(/\s+/g, ' ').trim();
+  if (text.length <= maxLen) return text;
+  return `${text.slice(0, maxLen - 1)}…`;
+}
+
+function formatCommentLocation(comment) {
+  const filePath = comment.filePath || comment.file_path;
+  if (!filePath) return '';
+  const line = comment.line_number != null ? `:${comment.line_number}` : '';
+  return `${filePath}${line}`;
+}
+
+function formatCommentAuthor(comment) {
+  const author = comment.author;
+  if (!author) return '';
+  return author.name || author.username || author.userId || '';
+}
+
+function printCommentNode(comment, depth = 0) {
+  const indent = '  '.repeat(depth);
+  const author = formatCommentAuthor(comment);
+  const type = (comment.comment_type || '').replace('_COMMENT', '').toLowerCase();
+  const resolved = comment.resolved ? 'resolved' : 'open';
+  const location = formatCommentLocation(comment);
+  const locationPart = location ? ` @ ${location}` : '';
+  const header = `${indent}[${comment.comment_biz_id}] ${author} (${type}, ${resolved})${locationPart}`;
+  process.stdout.write(`${header}\n`);
+  if (comment.content) {
+    process.stdout.write(`${indent}  ${summarizeCommentContent(comment.content)}\n`);
+  }
+  const children = comment.child_comments_list;
+  if (children && children.length > 0) {
+    for (const child of children) {
+      printCommentNode(child, depth + 1);
+    }
+  }
+}
+
+export function printCommentTree(comments) {
+  if (!comments || comments.length === 0) {
+    process.stdout.write('(no comments)\n');
+    return;
+  }
+  for (const comment of comments) {
+    printCommentNode(comment, 0);
+  }
+}
+
+export function pickCommentSummary(comment) {
+  return [
+    ['Comment ID', comment.comment_biz_id],
+    ['Type', comment.comment_type],
+    ['Author', formatCommentAuthor(comment)],
+    ['Resolved', comment.resolved],
+    ['State', comment.state],
+    ['Location', formatCommentLocation(comment) || undefined],
+    ['Content', comment.content],
+    ['Parent', comment.parent_comment_biz_id],
+    ['Root', comment.root_comment_biz_id],
+    ['Created at', comment.comment_time],
+  ];
+}
