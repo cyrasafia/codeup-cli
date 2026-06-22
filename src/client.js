@@ -137,6 +137,34 @@ export const api = {
       { body, cfg },
     );
   },
+  listChangeRequestComments(repoId, localId, body, cfg) {
+    return request(
+      'POST',
+      `/${encodeRepoId(repoId)}/changeRequests/${encodeURIComponent(String(localId))}/comments/list`,
+      { body, cfg },
+    );
+  },
+  createChangeRequestComment(repoId, localId, body, cfg) {
+    return request(
+      'POST',
+      `/${encodeRepoId(repoId)}/changeRequests/${encodeURIComponent(String(localId))}/comments`,
+      { body, cfg },
+    );
+  },
+  updateChangeRequestComment(repoId, localId, commentBizId, body, cfg) {
+    return request(
+      'PUT',
+      `/${encodeRepoId(repoId)}/changeRequests/${encodeURIComponent(String(localId))}/comments/${encodeURIComponent(String(commentBizId))}`,
+      { body, cfg },
+    );
+  },
+  listChangeRequestPatchSets(repoId, localId, cfg) {
+    return request(
+      'GET',
+      `/${encodeRepoId(repoId)}/changeRequests/${encodeURIComponent(String(localId))}/diffs/patches`,
+      { cfg },
+    );
+  },
 };
 
 export function encodeRepoId(repoId) {
