@@ -250,7 +250,7 @@ codeup mr merge zlxt/zl-product/foo 3 --json
 
 ### MR 评论 `codeup mr comment`
 
-列出、回复、标记已解决合并请求评论。PAT 需 **合并请求 · 只读**（`list`）或 **合并请求 · 读写**（`reply` / `resolve`）。
+列出、创建、回复、标记已解决合并请求评论。PAT 需 **合并请求 · 只读**（`list`）或 **合并请求 · 读写**（`create` / `reply` / `resolve`）。
 
 #### 列出评论 `codeup mr comment list`
 
@@ -262,9 +262,20 @@ codeup mr comment list 3 --type inline --file src/foo.js --json
 
 可选项：`[repoId]`、`[localId]`、`--resolved`、`--unresolved`、`--type`（默认 `all`：`all` | `global` | `inline`）、`--file`、`--include-drafts`、`--remote`、`--json`。
 
+#### 创建顶层评论 `codeup mr comment create`
+
+在 MR 上新建全局评论（非回复、非行内评论）。
+
+```bash
+codeup mr comment create 3 -c "整体 LGTM，建议补充单测"
+codeup mr comment create zlxt/zl-product/foo 3 -c "评审意见" --json
+```
+
+可选项：`[repoId]`、`[localId]`、`-c, --comment`（必填）、`--draft`、`--remote`、`--json`。
+
 #### 回复评论 `codeup mr comment reply`
 
-回复已有评论（全局或行内）；不支持新建顶层评论或新建行内评论。
+回复已有评论（全局或行内）；不支持新建行内评论。
 
 ```bash
 codeup mr comment reply 3 --parent <commentBizId> -c "已修复"

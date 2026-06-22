@@ -94,6 +94,23 @@ export async function resolvePatchSetBizId(repoRef, localId, comment, cfg) {
   return patchSetBizId;
 }
 
+export async function buildGlobalCommentBody(
+  repoRef,
+  localId,
+  content,
+  { draft = false } = {},
+  cfg,
+) {
+  const patchsetBizId = await resolvePatchSetBizId(repoRef, localId, null, cfg);
+  return {
+    comment_type: 'GLOBAL_COMMENT',
+    content,
+    draft,
+    patchset_biz_id: patchsetBizId,
+    resolved: false,
+  };
+}
+
 export function buildReplyCommentBody(parent, content, { draft = false } = {}) {
   const patchsetBizId = getCommentPatchSetBizId(parent);
   const body = {
