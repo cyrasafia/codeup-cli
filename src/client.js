@@ -137,6 +137,13 @@ export const api = {
       { body, cfg },
     );
   },
+  closeChangeRequest(repoId, localId, cfg) {
+    return request(
+      'POST',
+      `/${encodeRepoId(repoId)}/changeRequests/${encodeURIComponent(String(localId))}/close`,
+      { cfg },
+    );
+  },
   listChangeRequestComments(repoId, localId, body, cfg) {
     return request(
       'POST',

@@ -10,6 +10,7 @@ import { registerMrGetCommand } from '../src/commands/mr/get.js';
 import { registerMrUpdateCommand } from '../src/commands/mr/update.js';
 import { registerMrReviewCommand } from '../src/commands/mr/review.js';
 import { registerMrMergeCommand } from '../src/commands/mr/merge.js';
+import { registerMrCloseCommand } from '../src/commands/mr/close.js';
 import { registerMrCommentListCommand } from '../src/commands/mr/comment/list.js';
 import { registerMrCommentCreateCommand } from '../src/commands/mr/comment/create.js';
 import { registerMrCommentReplyCommand } from '../src/commands/mr/comment/reply.js';
@@ -42,6 +43,7 @@ registerMrGetCommand(mr);
 registerMrUpdateCommand(mr);
 registerMrReviewCommand(mr);
 registerMrMergeCommand(mr);
+registerMrCloseCommand(mr);
 
 const comment = mr
   .command('comment')

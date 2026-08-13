@@ -5,7 +5,7 @@
 支持功能：
 
 - 创建 / 查询 / 更新项目（仓库）
-- 创建 / 查询 / 更新 / 评审 / 合并合并请求（MR）
+- 创建 / 查询 / 更新 / 评审 / 合并 / 关闭合并请求（MR）
 
 > 跨平台（Linux / macOS / Windows），运行依赖 Node.js 18+（使用了内置 `fetch`）。
 
@@ -42,7 +42,8 @@ codeup
     ├── get
     ├── update
     ├── review
-    └── merge
+    ├── merge
+    └── close
 ```
 
 ## 配置
@@ -58,7 +59,7 @@ codeup
 | `codeup repo list` / `codeup repo get` | **代码管理** · **代码仓库** · **只读** | 查询仓库列表与详情 |
 | `codeup repo create` / `codeup repo update` | **代码管理** · **代码仓库** · **读写** | 创建与更新仓库（已涵盖只读查询能力） |
 | `codeup mr list` / `codeup mr get` | **代码管理** · **合并请求** · **只读** | 查询合并请求列表与详情 |
-| `codeup mr create` / `update` / `review` / `merge` | **代码管理** · **合并请求** · **读写** | 创建、更新、评审与合并 MR |
+| `codeup mr create` / `update` / `review` / `merge` / `close` | **代码管理** · **合并请求** · **读写** | 创建、更新、评审、合并与关闭 MR |
 | 将默认父路径或 `--namespace-id` 配成**路径**（如 `zlxt/zl-product`） | **代码管理** · **代码组** · **只读** | 创建前会调用 [GetNamespace](https://help.aliyun.com/zh/yunxiao/developer-reference/getnamespace-query-code-group-space-information) 把路径解析为 `namespaceId`；仅用**数字 ID** 时可不勾选此项 |
 
 **最小权限组合建议**
@@ -66,7 +67,7 @@ codeup
 - 只使用仓库查询类命令：至少 **代码仓库 · 只读**。
 - 使用仓库创建/更新：至少 **代码仓库 · 读写**。
 - 使用 MR 查询：至少 **合并请求 · 只读**（通常与代码仓库只读一并勾选）。
-- 使用 MR 创建/评审/合并：至少 **合并请求 · 读写**。
+- 使用 MR 创建/评审/合并/关闭：至少 **合并请求 · 读写**。
 - 使用路径作为父分组且需解析：在仓库相关权限基础上增加 **代码组 · 只读**；若未开通，解析接口可能返回 **403**，可改为只使用数字 `namespaceId`。
 
 **如何获取（云效控制台）**
@@ -248,6 +249,17 @@ codeup mr merge zlxt/zl-product/foo 3 --json
 
 可选项：`[repoId]`、`--type`（默认 `no-fast-forward`：`ff-only` | `no-fast-forward` | `squash` | `rebase`）、`-m, --message`、`--remove-source-branch`、`--remote`、`--json`。
 
+### 关闭 MR `codeup mr close`
+
+关闭合并请求（不合并）。
+
+```bash
+codeup mr close zlxt/zl-product/foo 3
+codeup mr close 3 --json    # 省略 repoId 时从 git remote 推断
+```
+
+可选项：`[repoId]`、`[localId]`、`--remote`、`--json`。
+
 ### MR 评论 `codeup mr comment`
 
 列出、创建、回复、标记已解决合并请求评论。PAT 需 **合并请求 · 只读**（`list`）或 **合并请求 · 读写**（`create` / `reply` / `resolve`）。
@@ -300,4 +312,4 @@ codeup mr comment resolve 3 --comment <commentBizId> --unresolve
 
 ## 不在范围内
 
-按 `specs.md`，本 CLI 暂不实现：删除 / 归档 / 转移 / 模板库列表、关闭 MR，以及日常 git 操作（clone/pull/push 等直接用 `git` 命令）。`codeup mr create` / `codeup mr list` 会读取本地 git 上下文推断仓库与分支，但不替代 git 本身。
+按 `specs.md`，本 CLI 暂不实现：删除 / 归档 / 转移 / 模板库列表，以及日常 git 操作（clone/pull/push 等直接用 `git` 命令）。`codeup mr create` / `codeup mr list` 会读取本地 git 上下文推断仓库与分支，但不替代 git 本身。
