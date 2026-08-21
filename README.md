@@ -195,6 +195,14 @@ codeup mr create zlxt/zl-product/my-repo \
 
 **注意：** 源分支需已 push 到远程；当前分支不能已是默认分支（除非显式 `--source-branch`）。
 
+**仓库推断检测：** 所有 `mr` 子命令在省略仓库参数、从 git remote 推断时会做检测，失败时给出提示而非原始报错：
+
+- 当前目录不是 git 仓库；
+- `origin`（或 `--remote` 指定的）远程不是 `codeup.aliyun.com`；
+- 远程对应的仓库在组织中不存在或令牌无权限访问（HTTP 404）。
+
+以上情况均可显式传入 `namespace/path` 或数字仓库 ID 绕过推断。
+
 ### MR 列表 `codeup mr list`
 
 ```bash

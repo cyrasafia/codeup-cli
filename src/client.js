@@ -80,7 +80,11 @@ async function requestUrl(method, url, options = {}) {
       data && typeof data === 'object'
         ? JSON.stringify(data)
         : data || res.statusText;
-    throw new Error(`HTTP ${res.status} ${method} ${url}\n${detail}`);
+    const err = new Error(`HTTP ${res.status} ${method} ${url}\n${detail}`);
+    err.status = res.status;
+    err.method = method;
+    err.url = url;
+    throw err;
   }
 
   return { data, headers: headersToObject(res.headers), status: res.status };
@@ -181,23 +185,4 @@ export function encodeRepoId(repoId) {
   const s = String(repoId);
   if (s.includes('/')) return encodeURIComponent(s);
   return encodeURIComponent(s);
-}
-
-function isNumericRepoRef(ref) {
-  return /^\d+$/.test(String(ref).trim());
-}
-
-export async function resolveRepoRefToId(ref, cfg) {
-  const trimmed = String(ref).trim();
-  if (!trimmed) {
-    throw new Error('repoId is required');
-  }
-  if (isNumericRepoRef(trimmed)) {
-    return Number.parseInt(trimmed, 10);
-  }
-  const { data } = await api.getRepository(trimmed, cfg);
-  if (!data || data.id === undefined || data.id === null) {
-    throw new Error(`Could not resolve repository ID for: ${trimmed}`);
-  }
-  return data.id;
 }

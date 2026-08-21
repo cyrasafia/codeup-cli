@@ -1,5 +1,43 @@
-import { resolveRepoRefToId } from '../../client.js';
-import { readGitContext } from '../../git-context.js';
+import { api } from '../../client.js';
+import { readGitContext, readCurrentBranch } from '../../git-context.js';
+
+function isNumericRepoRef(ref) {
+  return /^\d+$/.test(String(ref).trim());
+}
+
+function repoNotFoundError(repoRef, cfg, explicit) {
+  const org =
+    cfg && cfg.organizationId ? ` in organization "${cfg.organizationId}"` : '';
+  const lines = [
+    `Repository not found on Codeup${org}: ${repoRef} (HTTP 404)`,
+    '- Check the repository path/ID and that it belongs to your organization.',
+    '- Check your token has access to it (see "codeup config").',
+  ];
+  if (!explicit) {
+    lines.push(
+      '- Or pass the repository explicitly: codeup mr <command> <namespace/path>',
+    );
+  }
+  const err = new Error(lines.join('\n'));
+  err.status = 404;
+  return err;
+}
+
+export async function fetchMrRepo(repoRef, cfg, { explicit = false } = {}) {
+  let data;
+  try {
+    ({ data } = await api.getRepository(repoRef, cfg));
+  } catch (err) {
+    if (err && err.status === 404) {
+      throw repoNotFoundError(repoRef, cfg, explicit);
+    }
+    throw err;
+  }
+  if (!data || data.id === undefined || data.id === null) {
+    throw new Error(`Could not resolve repository: ${repoRef}`);
+  }
+  return data;
+}
 
 export function resolveMrRepoAndGit(repoArg, opts) {
   if (repoArg) {
@@ -8,7 +46,13 @@ export function resolveMrRepoAndGit(repoArg, opts) {
       try {
         gitCtx = readGitContext({ remoteName: opts.remote || 'origin' });
       } catch {
-        gitCtx = null;
+        // Remote may be missing or not Codeup; the current branch is still
+        // local information, so fall back to reading it without the remote.
+        try {
+          gitCtx = { currentBranch: readCurrentBranch() };
+        } catch {
+          gitCtx = null;
+        }
       }
     }
     return { repoRef: repoArg, gitCtx };
@@ -19,16 +63,28 @@ export function resolveMrRepoAndGit(repoArg, opts) {
 
 export async function resolveMrRepoRef(repoArg, { remote = 'origin' } = {}, cfg) {
   if (repoArg) {
+    if (!isNumericRepoRef(repoArg)) {
+      await fetchMrRepo(repoArg, cfg, { explicit: true });
+    }
     return repoArg;
   }
   const gitCtx = readGitContext({ remoteName: remote });
+  await fetchMrRepo(gitCtx.repoPath, cfg, { explicit: false });
   return gitCtx.repoPath;
 }
 
 export async function resolveMrProjectIds(repoArg, opts, cfg) {
-  const repoRef = await resolveMrRepoRef(repoArg, opts, cfg);
-  const id = await resolveRepoRefToId(repoRef, cfg);
-  return String(id);
+  let repoRef = repoArg;
+  let explicit = true;
+  if (!repoRef) {
+    repoRef = readGitContext({ remoteName: opts.remote || 'origin' }).repoPath;
+    explicit = false;
+  }
+  if (isNumericRepoRef(repoRef)) {
+    return String(Number.parseInt(repoRef.trim(), 10));
+  }
+  const repo = await fetchMrRepo(repoRef, cfg, { explicit });
+  return String(repo.id);
 }
 
 /**

@@ -1,4 +1,4 @@
-import { api, resolveRepoRefToId } from '../../client.js';
+import { api } from '../../client.js';
 import { loadConfig } from '../../config.js';
 import {
   pickChangeRequestSummary,
@@ -8,7 +8,7 @@ import {
 } from '../../format.js';
 import { readLastCommitSubject } from '../../git-context.js';
 import { applyWipTitle } from '../../mr-wip.js';
-import { resolveMrRepoAndGit } from '../shared/mr-repo-resolve.js';
+import { resolveMrRepoAndGit, fetchMrRepo } from '../shared/mr-repo-resolve.js';
 
 export function registerMrCreateCommand(program) {
   program
@@ -46,8 +46,10 @@ export function registerMrCreateCommand(program) {
       const cfg = loadConfig();
       const { repoRef, gitCtx } = resolveMrRepoAndGit(repoArg, opts);
 
-      const repoId = await resolveRepoRefToId(repoRef, cfg);
-      const { data: repo } = await api.getRepository(repoRef, cfg);
+      const repo = await fetchMrRepo(repoRef, cfg, {
+        explicit: Boolean(repoArg),
+      });
+      const repoId = repo.id;
 
       const sourceBranch =
         opts.sourceBranch || (gitCtx ? gitCtx.currentBranch : undefined);
