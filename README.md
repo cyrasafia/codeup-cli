@@ -270,7 +270,7 @@ codeup mr close 3 --json    # 省略 repoId 时从 git remote 推断
 
 ### MR 评论 `codeup mr comment`
 
-列出、创建、回复、标记已解决合并请求评论。PAT 需 **合并请求 · 只读**（`list`）或 **合并请求 · 读写**（`create` / `reply` / `resolve`）。
+列出、查看全文、创建、回复、标记已解决合并请求评论。PAT 需 **合并请求 · 只读**（`list` / `get`）或 **合并请求 · 读写**（`create` / `reply` / `resolve`）。
 
 #### 列出评论 `codeup mr comment list`
 
@@ -281,6 +281,17 @@ codeup mr comment list 3 --type inline --file src/foo.js --json
 ```
 
 可选项：`[repoId]`、`[localId]`、`--resolved`、`--unresolved`、`--type`（默认 `all`：`all` | `global` | `inline`）、`--file`、`--include-drafts`、`--remote`、`--json`。
+
+#### 查看评论全文 `codeup mr comment get`
+
+读取指定评论的完整内容（`list` 输出中内容会被截断到 80 字符），并附带其回复。
+
+```bash
+codeup mr comment get 3 --comment <commentBizId>
+codeup mr comment get zlxt/zl-product/foo 3 --comment <commentBizId> --json
+```
+
+可选项：`[repoId]`、`[localId]`、`--comment`（必填）、`--remote`、`--json`。
 
 #### 创建顶层评论 `codeup mr comment create`
 

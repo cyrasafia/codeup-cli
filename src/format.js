@@ -121,7 +121,17 @@ function formatCommentAuthor(comment) {
   return author.name || author.username || author.userId || '';
 }
 
-function printCommentNode(comment, depth = 0) {
+function printCommentContent(indent, content, full) {
+  if (full) {
+    for (const line of String(content).replace(/\n$/, '').split('\n')) {
+      process.stdout.write(`${indent}  ${line}\n`);
+    }
+  } else {
+    process.stdout.write(`${indent}  ${summarizeCommentContent(content)}\n`);
+  }
+}
+
+function printCommentNode(comment, depth = 0, { full = false } = {}) {
   const indent = '  '.repeat(depth);
   const author = formatCommentAuthor(comment);
   const type = (comment.comment_type || '').replace('_COMMENT', '').toLowerCase();
@@ -131,23 +141,23 @@ function printCommentNode(comment, depth = 0) {
   const header = `${indent}[${comment.comment_biz_id}] ${author} (${type}, ${resolved})${locationPart}`;
   process.stdout.write(`${header}\n`);
   if (comment.content) {
-    process.stdout.write(`${indent}  ${summarizeCommentContent(comment.content)}\n`);
+    printCommentContent(indent, comment.content, full);
   }
   const children = comment.child_comments_list;
   if (children && children.length > 0) {
     for (const child of children) {
-      printCommentNode(child, depth + 1);
+      printCommentNode(child, depth + 1, { full });
     }
   }
 }
 
-export function printCommentTree(comments) {
+export function printCommentTree(comments, { full = false } = {}) {
   if (!comments || comments.length === 0) {
     process.stdout.write('(no comments)\n');
     return;
   }
   for (const comment of comments) {
-    printCommentNode(comment, 0);
+    printCommentNode(comment, 0, { full });
   }
 }
 

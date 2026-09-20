@@ -12,7 +12,7 @@ import {
 } from '../../shared/mr-repo-resolve.js';
 import {
   buildReplyCommentBody,
-  fetchParentComment,
+  fetchCommentByBizId,
   resolvePatchSetBizId,
 } from './helpers.js';
 
@@ -44,7 +44,7 @@ export function registerMrCommentReplyCommand(program) {
       const cfg = loadConfig();
       const repoRef = await resolveMrRepoRef(repoRefArg, opts, cfg);
 
-      const parent = await fetchParentComment(
+      const parent = await fetchCommentByBizId(
         repoRef,
         mrLocalId,
         opts.parent,

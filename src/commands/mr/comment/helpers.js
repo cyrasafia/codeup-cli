@@ -64,11 +64,11 @@ export function getCommentPatchSetBizId(comment) {
   );
 }
 
-export async function fetchParentComment(repoRef, localId, parentBizId, cfg) {
+export async function fetchCommentByBizId(repoRef, localId, commentBizId, cfg) {
   const body = buildListCommentsBody({
     type: 'all',
     includeDrafts: true,
-    commentBizIds: [parentBizId],
+    commentBizIds: [commentBizId],
   });
   const { data } = await api.listChangeRequestComments(
     repoRef,
@@ -77,7 +77,7 @@ export async function fetchParentComment(repoRef, localId, parentBizId, cfg) {
     cfg,
   );
   const comments = Array.isArray(data) ? data : [];
-  return findCommentByBizId(comments, parentBizId);
+  return findCommentByBizId(comments, commentBizId);
 }
 
 export async function resolvePatchSetBizId(repoRef, localId, comment, cfg) {
